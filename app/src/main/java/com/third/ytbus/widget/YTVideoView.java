@@ -58,7 +58,6 @@ public class YTVideoView extends SurfaceView {
 		mPlayer.setOnBufferingUpdateListener(mBufferingUpdateListener);
         mPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mPlayer.setScreenOnWhilePlaying(true);
-
 		getHolder().addCallback(mSHCallback);
 		//为了可以播放视频或者使用Camera预览，我们需要指定其Buffer类型
 		getHolder().setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
@@ -248,8 +247,13 @@ public class YTVideoView extends SurfaceView {
      */
 	public void setVideoPath(String currentPlayFilePath) {
 		path = currentPlayFilePath;
+		playPosition = 0;
 		//但是这样可能无法无缝切换(主要是轮播下一个视频的时候,每次重新new 一个 MediaPlayer 则无法做到无缝播放)
 		openMediaPlayer();
+	}
+
+	public String getVideoPath(){
+		return path;
 	}
 
 	/**
