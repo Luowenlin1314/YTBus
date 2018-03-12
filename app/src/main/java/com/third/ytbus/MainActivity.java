@@ -1,15 +1,24 @@
 package com.third.ytbus;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.third.ytbus.base.ActivityFragmentInject;
 import com.third.ytbus.base.BaseActivity;
 import com.third.ytbus.bean.PlayDataBean;
+import com.third.ytbus.manager.SerialInterface;
+import com.third.ytbus.utils.IntentUtils;
+import com.third.ytbus.utils.KeyEventUtils;
 import com.third.ytbus.utils.ParseFileUtil;
 import com.third.ytbus.utils.PreferenceUtils;
 import com.third.ytbus.utils.YTBusConfigData;
@@ -37,16 +46,22 @@ import java.util.List;
 public class MainActivity extends BaseActivity {
 
     private static final int WHAT_PLAY_AD = 11;
-
+    private static final String SP_KEY_PLAY_PATH = "playPath";
+    private static final String SP_KEY_PLAY_TIME = "playTime";
     private YTVideoView ytVideoView;
+    private TextView ytAdTextView;
     private PlayDataBean playDataBean;
     private String ytFileRootPath;
 
     @Override
     protected void toHandleMessage(Message msg) {
-        switch (msg.what){
+        switch (msg.what) {
             case WHAT_PLAY_AD:
                 handleChangePlay();
+                break;
+            case 1:
+                KeyEventUtils.sendKeyEvent(20);
+                mHandler.sendEmptyMessageDelayed(1,3000);
                 break;
         }
     }
@@ -54,6 +69,7 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void findViewAfterViewCreate() {
         ytVideoView = (YTVideoView) findViewById(R.id.ytVideoView);
+        ytAdTextView = (TextView) findViewById(R.id.txt_ad_content);
     }
 
     @Override
@@ -62,6 +78,8 @@ public class MainActivity extends BaseActivity {
         ytVideoViewOnCompletionListener();
         ytFileRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/DownLoad/";
         playDataBean = parseConfigFile();
+
+        SerialInterface.serialInit(this);
     }
 
     @Override
@@ -76,59 +94,82 @@ public class MainActivity extends BaseActivity {
         doOnResumeThings();
     }
 
-    private void doOnPauseThings(){
-        if(ytVideoView != null){
-            if(ytVideoView.isPlaying()){
+    private void doOnPauseThings() {
+        if (ytVideoView != null) {
+            if (ytVideoView.isPlaying()) {
+                //保存当前播放的地址跟位置
                 tempPlayPosition = ytVideoView.getCurrentPosition();
-
+                tempPlayPath = ytVideoView.getVideoPath();
+                if (!TextUtils.isEmpty(tempPlayPath)) {
+                    PreferenceUtils.commitString(SP_KEY_PLAY_PATH, tempPlayPath);
+                }
+                if (tempPlayPosition > 0) {
+                    PreferenceUtils.commitInt(SP_KEY_PLAY_TIME, tempPlayPosition);
+                }
             }
         }
     }
 
-    private void doOnResumeThings(){
-        if(playDataBean != null){
+    private void doOnResumeThings() {
+        String lastPlayPath = PreferenceUtils.getString(SP_KEY_PLAY_PATH, "");
+        int lastPlayTime = PreferenceUtils.getInt(SP_KEY_PLAY_TIME, 0);
+        if (playDataBean != null) {
             playDefaultVideo(playDataBean.getDefaultPlayPath());
             calculateNextADPlayTime(playDataBean.getAdPlayStartTime());
-        }else{
+        } else {
             playDefaultVideo(YTBusConfigData.DEFAULT_PLAY_PATH);
+        }
+        if (!TextUtils.isEmpty(lastPlayPath)) {
+            if (lastPlayPath.contains(playDataBean.getDefaultPlayPath())) {
+                ytVideoView.seekTo(lastPlayTime);
+            }
         }
     }
 
     //播放广告时先保存电影的位置
     private int tempPlayPosition = 0;
-    private void handleChangePlay(){
+    private String tempPlayPath = "";
+
+    private void handleChangePlay() {
         String adPlayPath = playDataBean.getAdPlayPath();
-        if(playDataBean != null && !TextUtils.isEmpty(adPlayPath)){
+        if (playDataBean != null && !TextUtils.isEmpty(adPlayPath)) {
             File adFile = new File(ytFileRootPath, adPlayPath);
-            if(adFile != null && adFile.exists()){
-                if(ytVideoView.isPlaying()){
+            if (adFile != null && adFile.exists()) {
+                if (ytVideoView.isPlaying()) {
                     tempPlayPosition = ytVideoView.getCurrentPosition();
                 }
                 ytVideoView.setVideoPath(ytFileRootPath + adPlayPath);
             }
         }
+        //播放字幕
+        String adContent = playDataBean.getAdContent();
+        if (!TextUtils.isEmpty(adContent)) {
+            ytAdTextView.setText(adContent);
+            ytAdTextView.setVisibility(View.VISIBLE);
+        }
     }
 
     //设置播放完成的监听
-    private void ytVideoViewOnCompletionListener(){
+    private void ytVideoViewOnCompletionListener() {
         ytVideoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
             @Override
             public void onCompletion(MediaPlayer mp) {
-                if(playDataBean != null){
+                if (playDataBean != null) {
                     playDefaultVideo(playDataBean.getDefaultPlayPath());
-                }else{
+                } else {
                     playDefaultVideo(YTBusConfigData.DEFAULT_PLAY_PATH);
                 }
-                if(tempPlayPosition > 0){
+                if (tempPlayPosition > 0) {
                     ytVideoView.seekTo(tempPlayPosition);
                     tempPlayPosition = 0;
                 }
+                ytAdTextView.setVisibility(View.GONE);
             }
         });
     }
 
     //1、解析配置文件,如果解析出错，直接播放默认文件，默认文件不存在，播放内置视频
-    private PlayDataBean parseConfigFile(){
+    private PlayDataBean parseConfigFile() {
         try {
             File configFile = new File(ytFileRootPath, YTBusConfigData.YTBusConfigFilePath);
             String root = "configRoot";
@@ -136,13 +177,15 @@ public class MainActivity extends BaseActivity {
             files.add("defaultPlayPath");
             files.add("adPlayStartTime");
             files.add("adPlayPath");
+            files.add("adContent");
             List<String> elements = new ArrayList<>();
             elements.add("DEFAULT_PLAY");
             elements.add("AD_PLAY_TIME");
             elements.add("AD_PLAY_PATH");
+            elements.add("AD_TEXT_CONTENT");
             List<PlayDataBean> playDataBeanList = ParseFileUtil.parse(new FileInputStream(configFile),
-                    PlayDataBean.class,files,elements,root);
-            if(playDataBeanList != null && playDataBeanList.size() > 0){
+                    PlayDataBean.class, files, elements, root);
+            if (playDataBeanList != null && playDataBeanList.size() > 0) {
                 return playDataBeanList.get(0);
             }
         } catch (FileNotFoundException e) {
@@ -152,41 +195,75 @@ public class MainActivity extends BaseActivity {
     }
 
     //2、播放视频，如果视频不存在，播放内置视频
-    private void playDefaultVideo(String defaultPlayFilePath){
+    private void playDefaultVideo(String defaultPlayFilePath) {
         File defaultVideoFile = new File(ytFileRootPath, defaultPlayFilePath);
-        if(defaultVideoFile != null && defaultVideoFile.exists()){
+        if (defaultVideoFile != null && defaultVideoFile.exists()) {
             ytVideoView.setVideoPath(ytFileRootPath + defaultPlayFilePath);
-        }else{
+        } else {
             ytVideoView.setVideoPath(ytFileRootPath + YTBusConfigData.DEFAULT_PLAY_PATH);
         }
     }
 
     //3、计算下次广告播放的时间
     private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-    private void calculateNextADPlayTime(String adPlayTime){
-        if(!TextUtils.isEmpty(adPlayTime)){
-            try{
+
+    private void calculateNextADPlayTime(String adPlayTime) {
+        if (!TextUtils.isEmpty(adPlayTime)) {
+            try {
                 long nextAdTime = sdf.parse(adPlayTime).getTime();
                 long currentTime = sdf.parse(sdf.format(new Date())).getTime();
-                if(nextAdTime >= currentTime){
-                    mHandler.sendEmptyMessageDelayed(WHAT_PLAY_AD,nextAdTime - currentTime);
+                if (nextAdTime >= currentTime) {
+                    mHandler.sendEmptyMessageDelayed(WHAT_PLAY_AD, nextAdTime - currentTime);
+                    Log.e("ZM", "播放内容：" + playDataBean.getAdContent());
                 }
-            }catch (Exception e){
+            } catch (Exception e) {
                 //不处理
-                Log.e("ZM",e.getMessage());
+                Log.e("ZM", e.getMessage());
             }
         }
     }
 
-    public void play(View v){
-        ytVideoView.start();
+    /**
+     * 调到文件系统
+     */
+    private void toFileSystem() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        //intent.setType(“image/*”);//选择图片
+        //intent.setType(“audio/*”); //选择音频
+        intent.setType("video/*"); //选择视频 （mp4 3gp 是android支持的视频格式）
+        //intent.setType(“video/*;image/*”);//同时选择视频和图片
+//        intent.setType("*/*");//无类型限制
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, 1);
     }
 
-    public void pause(View v){
-        ytVideoView.pause();
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == Activity.RESULT_OK) {
+            Uri uri = data.getData();
+            String fromPath = "";
+            if ("file".equalsIgnoreCase(uri.getScheme())) {//使用第三方应用打开
+                fromPath = uri.getPath();
+            } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {//4.4以后
+                fromPath = IntentUtils.getPathFrom4(this, uri);
+            } else {//4.4以下下系统调用方法
+                fromPath = IntentUtils.getRealPathFromURI(this,uri);
+            }
+            Toast.makeText(this,fromPath,Toast.LENGTH_LONG).show();
+        }
     }
 
-    public void seekTo(View v){
-        ytVideoView.seekTo(ytVideoView.getCurrentPosition() + 10 * 1000);
+
+    public void play(View view){
+        try {
+            SerialInterface.openSerialPort("/dev/ttyS1",115200);
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+        }
     }
+
+
+
 }

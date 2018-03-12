@@ -16,6 +16,17 @@ public class PlayDataBean {
     //广告视频地址
     private String adPlayPath;
 
+    //广告内容
+    private String adContent;
+
+    public String getAdContent() {
+        return adContent;
+    }
+
+    public void setAdContent(String adContent) {
+        this.adContent = adContent;
+    }
+
     public String getDefaultPlayPath() {
         return defaultPlayPath;
     }

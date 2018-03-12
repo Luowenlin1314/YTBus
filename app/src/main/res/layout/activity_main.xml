@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
@@ -12,11 +12,27 @@
     <com.third.ytbus.widget.YTVideoView
         android:id="@+id/ytVideoView"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_height="match_parent"/>
+
+    <TextView
+        android:visibility="gone"
+        android:id="@+id/txt_ad_content"
+        android:textSize="@dimen/DIMEN_20sp"
+        android:textColor="#ffffff"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp"
+        android:background="#66ffffff"
+        android:ellipsize="marquee"
+        android:focusable="true"
+        android:gravity="center"
+        android:focusableInTouchMode="true"
+        android:marqueeRepeatLimit="marquee_forever"
+        android:singleLine="true"
+        android:text="" />
+
 
     <Button android:onClick="play" android:id="@+id/play" android:text="播放" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-    <Button android:onClick="pause" android:id="@+id/pause" android:text="暂停" android:layout_width="match_parent" android:layout_height="wrap_content"/>
-    <Button android:onClick="seekTo" android:id="@+id/seekTo" android:text="跳转" android:layout_width="match_parent" android:layout_height="wrap_content"/>
+    <!--<Button android:onClick="pause" android:id="@+id/pause" android:text="暂停" android:layout_width="match_parent" android:layout_height="wrap_content"/>-->
+    <!--<Button android:onClick="seekTo" android:id="@+id/seekTo" android:text="跳转" android:layout_width="match_parent" android:layout_height="wrap_content"/>-->
 
-</LinearLayout>
+</RelativeLayout>

@@ -7,7 +7,7 @@ package com.third.ytbus.utils;
 
 public interface YTBusProData {
 
-    String PRO_HEAD = "534C";
+    String PRO_HEAD = "4059";
     String CMD_SERIAL_CONTROL = "0001";
 
 }
