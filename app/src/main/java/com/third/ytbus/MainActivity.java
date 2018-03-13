@@ -1,7 +1,10 @@
 package com.third.ytbus;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
@@ -9,6 +12,7 @@ import android.os.Environment;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -17,6 +21,7 @@ import com.third.ytbus.base.ActivityFragmentInject;
 import com.third.ytbus.base.BaseActivity;
 import com.third.ytbus.bean.PlayDataBean;
 import com.third.ytbus.manager.SerialInterface;
+import com.third.ytbus.utils.Contans;
 import com.third.ytbus.utils.IntentUtils;
 import com.third.ytbus.utils.KeyEventUtils;
 import com.third.ytbus.utils.ParseFileUtil;
@@ -31,6 +36,14 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import static com.third.ytbus.utils.Contans.COM_00;
+import static com.third.ytbus.utils.Contans.COM_01;
+import static com.third.ytbus.utils.Contans.COM_02;
+import static com.third.ytbus.utils.Contans.COM_03;
+import static com.third.ytbus.utils.Contans.COM_04;
+import static com.third.ytbus.utils.Contans.COM_05;
+import static com.third.ytbus.utils.Contans.COM_06;
 
 @ActivityFragmentInject(
         contentViewId = R.layout.activity_main,
@@ -60,8 +73,7 @@ public class MainActivity extends BaseActivity {
                 handleChangePlay();
                 break;
             case 1:
-                KeyEventUtils.sendKeyEvent(20);
-                mHandler.sendEmptyMessageDelayed(1,3000);
+
                 break;
         }
     }
@@ -75,11 +87,18 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void initDataAfterFindView() {
         PreferenceUtils.init(this);
+        SerialInterface.serialInit(this);
         ytVideoViewOnCompletionListener();
         ytFileRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/DownLoad/";
         playDataBean = parseConfigFile();
+        registerYTProReceiver();
+    }
 
-        SerialInterface.serialInit(this);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        unRegisterYTProReceiver();
+        SerialInterface.closeAllSerialPort();
     }
 
     @Override
@@ -254,13 +273,68 @@ public class MainActivity extends BaseActivity {
         }
     }
 
-
+    private int count = 0;
     public void play(View view){
         try {
-            SerialInterface.openSerialPort("/dev/ttyS1",115200);
+            SerialInterface.openSerialPort("/dev/ttyS3",115200);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+        }
+        count++;
+    }
+
+
+    private YTProReceiver ytProReceiver;
+
+    private void registerYTProReceiver(){
+        ytProReceiver = new YTProReceiver();
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Contans.INTENT_YT_COM);
+        registerReceiver(ytProReceiver,intentFilter);
+    }
+
+    private void unRegisterYTProReceiver(){
+        if(ytProReceiver != null){
+            unregisterReceiver(ytProReceiver);
+        }
+    }
+
+    private class YTProReceiver extends BroadcastReceiver{
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if(Contans.INTENT_YT_COM.equals(action)){
+                int comValue = intent.getIntExtra("comValue",-1);
+                handleCom(comValue);
+            }
+        }
+    }
+
+    private void handleCom(int comValue){
+        switch (comValue){
+            case COM_00:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_DPAD_UP);
+                break;
+            case COM_01:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_DPAD_DOWN);
+                break;
+            case COM_02:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_DPAD_LEFT);
+                break;
+            case COM_03:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_DPAD_RIGHT);
+                break;
+            case COM_04:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_ENTER);
+                break;
+            case COM_05:
+
+                break;
+            case COM_06:
+                KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_BACK);
+                break;
         }
     }
 

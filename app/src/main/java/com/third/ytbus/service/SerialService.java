@@ -11,6 +11,7 @@ import android.util.Log;
 
 import com.third.ytbus.manager.SerialInterface;
 import com.third.ytbus.manager.SerialManager;
+import com.third.ytbus.utils.Contans;
 import com.third.ytbus.utils.SerialUtils;
 import com.third.ytbus.utils.YTBusProData;
 
@@ -43,6 +44,7 @@ public class SerialService extends Service {
     public void onCreate() {
         super.onCreate();
         mSerialService = this;
+        changeActionReceiver(SerialInterface.getActions("/dev/ttyS3"));
     }
 
     @Override
@@ -50,6 +52,7 @@ public class SerialService extends Service {
         super.onDestroy();
         Log.d("ZOM", "onDestroy");
         mSerialService = null;
+        unRegistSerialDataReceiver();
     }
 
     	/*------------------------------ 功能一、基本串口服务  ------------------------------*/
@@ -200,6 +203,7 @@ public class SerialService extends Service {
             reciverString = reciverString.substring(startIndex);
         }
 
+        //4059 0200 0100 01
         System.out.println("reciverString-->"+reciverString);
 
         if (reciverString.length() > LIMIT_LENGTH) {
@@ -222,6 +226,8 @@ public class SerialService extends Service {
                 Log.e("ZM", "密令头：" + cmd);
                 Log.e("ZM", "有效数据：" + validData);
 
+                toHandler(validData);
+
                 reciverString = reciverString.substring((decimalism + 6) * 2,
                         reciverString.length());
 
@@ -230,6 +236,12 @@ public class SerialService extends Service {
                 }
             }
         }
+    }
+
+    private void toHandler(String data){
+        Intent intent = new Intent(Contans.INTENT_YT_COM);
+        intent.putExtra("comValue",Integer.valueOf(data));
+        sendBroadcast(intent);
     }
 
 }

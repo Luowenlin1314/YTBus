@@ -40,7 +40,7 @@ public class SerialReadThread extends Thread {
 	public void run() {
 		while (!stop) {
 			try {
-				byte[] buf = new byte[2048];
+				byte[] buf = new byte[1024];
 				int read = input.read(buf);
 				if (!stop) {
 					if (read > 0) {
@@ -50,7 +50,8 @@ public class SerialReadThread extends Thread {
 						}
 						sendBrocast(temp);
 					} else {
-						manager.closeSerial();
+//						manager.closeSerial();
+//						Thread.sleep(1000);
 					}
 				}
 			} catch (IOException e) {
