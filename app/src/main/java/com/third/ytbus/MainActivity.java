@@ -8,12 +8,15 @@ import android.content.IntentFilter;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.third.ytbus.utils.Contans.COM_00;
@@ -44,6 +48,7 @@ import static com.third.ytbus.utils.Contans.COM_03;
 import static com.third.ytbus.utils.Contans.COM_04;
 import static com.third.ytbus.utils.Contans.COM_05;
 import static com.third.ytbus.utils.Contans.COM_06;
+import static com.third.ytbus.utils.Contans.COM_12;
 
 @ActivityFragmentInject(
         contentViewId = R.layout.activity_main,
@@ -58,6 +63,7 @@ import static com.third.ytbus.utils.Contans.COM_06;
  */
 public class MainActivity extends BaseActivity {
 
+    private static final int WHAT_OPEN_SERIAL = 10;
     private static final int WHAT_PLAY_AD = 11;
     private static final String SP_KEY_PLAY_PATH = "playPath";
     private static final String SP_KEY_PLAY_TIME = "playTime";
@@ -69,13 +75,19 @@ public class MainActivity extends BaseActivity {
     @Override
     protected void toHandleMessage(Message msg) {
         switch (msg.what) {
+            case WHAT_OPEN_SERIAL:
+                openSerial();
+                break;
             case WHAT_PLAY_AD:
                 handleChangePlay();
                 break;
-            case 1:
-
-                break;
         }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState, PersistableBundle persistentState) {
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        super.onCreate(savedInstanceState, persistentState);
     }
 
     @Override
@@ -89,9 +101,14 @@ public class MainActivity extends BaseActivity {
         PreferenceUtils.init(this);
         SerialInterface.serialInit(this);
         ytVideoViewOnCompletionListener();
-        ytFileRootPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/DownLoad/";
+        ytFileRootPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+        File file = new File(ytFileRootPath,"YTBus");
+        if(file == null || !file.exists()){
+            file.mkdirs();
+        }
         playDataBean = parseConfigFile();
         registerYTProReceiver();
+        mHandler.sendEmptyMessageDelayed(WHAT_OPEN_SERIAL,2000);
     }
 
     @Override
@@ -165,6 +182,8 @@ public class MainActivity extends BaseActivity {
         if (!TextUtils.isEmpty(adContent)) {
             ytAdTextView.setText(adContent);
             ytAdTextView.setVisibility(View.VISIBLE);
+            ytAdTextView.setFocusable(true);
+            ytAdTextView.setFocusableInTouchMode(true);
         }
     }
 
@@ -182,7 +201,7 @@ public class MainActivity extends BaseActivity {
                     ytVideoView.seekTo(tempPlayPosition);
                     tempPlayPosition = 0;
                 }
-                ytAdTextView.setVisibility(View.GONE);
+                ytAdTextView.setVisibility(View.INVISIBLE);
             }
         });
     }
@@ -219,7 +238,8 @@ public class MainActivity extends BaseActivity {
         if (defaultVideoFile != null && defaultVideoFile.exists()) {
             ytVideoView.setVideoPath(ytFileRootPath + defaultPlayFilePath);
         } else {
-            ytVideoView.setVideoPath(ytFileRootPath + YTBusConfigData.DEFAULT_PLAY_PATH);
+//            ytVideoView.setVideoPath(ytFileRootPath + YTBusConfigData.DEFAULT_PLAY_PATH);
+            Toast.makeText(this,"找不到对应视频，请检查是否存在!",Toast.LENGTH_LONG).show();
         }
     }
 
@@ -249,9 +269,9 @@ public class MainActivity extends BaseActivity {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         //intent.setType(“image/*”);//选择图片
         //intent.setType(“audio/*”); //选择音频
-        intent.setType("video/*"); //选择视频 （mp4 3gp 是android支持的视频格式）
+//        intent.setType("video/*"); //选择视频 （mp4 3gp 是android支持的视频格式）
         //intent.setType(“video/*;image/*”);//同时选择视频和图片
-//        intent.setType("*/*");//无类型限制
+        intent.setType("*/*");//无类型限制
         intent.addCategory(Intent.CATEGORY_OPENABLE);
         startActivityForResult(intent, 1);
     }
@@ -269,24 +289,32 @@ public class MainActivity extends BaseActivity {
             } else {//4.4以下下系统调用方法
                 fromPath = IntentUtils.getRealPathFromURI(this,uri);
             }
-            Toast.makeText(this,fromPath,Toast.LENGTH_LONG).show();
+            if(!TextUtils.isEmpty(fromPath) && IntentUtils.isVideo(fromPath)){
+                if(fromPath.contains(ytFileRootPath)){
+                    fromPath = fromPath.replace(ytFileRootPath,"");
+                }
+                updatePlayConfig(fromPath);
+            }else{
+                Toast.makeText(this,"请选择视频文件！",Toast.LENGTH_LONG).show();
+            }
         }
     }
 
-    private int count = 0;
-    public void play(View view){
+    /**
+     * 打开串口,固件串口3，波特率115200
+     */
+    private void openSerial(){
         try {
             SerialInterface.openSerialPort("/dev/ttyS3",115200);
         } catch (Exception e) {
             e.printStackTrace();
-            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"串口打开错误，请检查串口是否正常！",Toast.LENGTH_LONG).show();
         }
-        count++;
+
     }
 
 
     private YTProReceiver ytProReceiver;
-
     private void registerYTProReceiver(){
         ytProReceiver = new YTProReceiver();
         IntentFilter intentFilter = new IntentFilter();
@@ -312,6 +340,10 @@ public class MainActivity extends BaseActivity {
         }
     }
 
+    /**
+     * 处理协议
+     * @param comValue
+     */
     private void handleCom(int comValue){
         switch (comValue){
             case COM_00:
@@ -330,14 +362,60 @@ public class MainActivity extends BaseActivity {
                 KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_ENTER);
                 break;
             case COM_05:
-
+                doHandle05();
                 break;
             case COM_06:
                 KeyEventUtils.sendKeyEvent(KeyEvent.KEYCODE_BACK);
                 break;
+            case COM_12:
+                toFileSystem();
+                break;
         }
     }
 
+    /**
+     * 暂停/播放
+     */
+    private void doHandle05(){
+        if(ytVideoView != null){
+            if(ytVideoView.isPlaying()){
+                ytVideoView.pause();
+            }else{
+                ytVideoView.start();;
+            }
+        }
+    }
+
+    /**
+     * 更改播放配置
+     * @param path
+     */
+    private void updatePlayConfig(String path){
+        HashMap<String,String> hs = new HashMap<>();
+        hs.put("DEFAULT_PLAY",path);
+        String root = "configRoot";
+        File configFile = new File(ytFileRootPath, YTBusConfigData.YTBusConfigFilePath);
+        ParseFileUtil.updateTagContents(configFile,hs,root);
+        playDataBean = parseConfigFile();
+        PreferenceUtils.commitString(SP_KEY_PLAY_PATH, "");
+        PreferenceUtils.commitInt(SP_KEY_PLAY_TIME, 0);
+    }
+
+
+    private long timeLimit = 0;
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            if (System.currentTimeMillis() - timeLimit < 1500) {
+                finish();
+            } else {
+                timeLimit = System.currentTimeMillis();
+                Toast.makeText(this,"再按一次退出应用",Toast.LENGTH_LONG).show();
+            }
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 
 
 }

@@ -8,10 +8,10 @@ package com.third.ytbus.utils;
 public interface YTBusConfigData {
 
     //内置视频文件
-    String DEFAULT_PLAY_PATH = "test.mp4";
+    String DEFAULT_PLAY_PATH = "/YTBus/defaultPlay.mp4";
 
     //配置文件相对地址
-    String YTBusConfigFilePath = "testConfig.xml";
+    String YTBusConfigFilePath = "/YTBus/ytConfig.xml";
 
     //默认视频地址TAG
     String DEFAULT_PLAY_PATH_TAG = "DEFAULT_PLAY";

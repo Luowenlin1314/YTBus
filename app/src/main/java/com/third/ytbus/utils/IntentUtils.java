@@ -157,5 +157,20 @@ public class IntentUtils {
         return "com.android.providers.media.documents".equals(uri.getAuthority());
     }
 
+    /**
+     * 判断资源是否为视频
+     * @param path
+     * @return
+     */
+    public static boolean isVideo(String path){
+        if(path.contains("avi")
+                || path.contains("mp4")
+                || path.contains("mkv")
+                || path.contains("rmvb")
+                || path.contains("mpeg")){
 
+            return true;
+        }
+        return false;
+    }
 }

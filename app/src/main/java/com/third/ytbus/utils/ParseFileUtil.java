@@ -3,12 +3,26 @@ package com.third.ytbus.utils;
 import android.util.Log;
 import android.util.Xml;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xmlpull.v1.XmlPullParser;
 
+import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 /**
  * 作者：Sky on 2018/3/6.
@@ -97,5 +111,55 @@ public class ParseFileUtil {
         }
     }
 
+    /**
+     * 修改tag内容
+     * @param tagNameAndValues
+     */
+    public static void updateTagContents(File xmlFile,HashMap<String,String> tagNameAndValues,String itemElement) {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder;
+        try {
+            dBuilder = dbFactory.newDocumentBuilder();
+            Document doc = dBuilder.parse(xmlFile);
+            NodeList rootList = doc.getElementsByTagName(itemElement);
+            Element emp = null;
+            for(int i=0; i < rootList.getLength();i++){
+                for (Map.Entry<String, String> entry : tagNameAndValues
+                        .entrySet()) {
+                    emp = (Element) rootList.item(i);
+                    NodeList list = emp.getElementsByTagName(entry.getKey());
+                    Node name = list.item(0).getFirstChild();
+                    name.setNodeValue(entry.getValue());
+                }
+            }
+            doc2XmlFile(doc, xmlFile.getAbsolutePath());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * 将修改后的数据保存
+     * @param document
+     * @param filename
+     * @return
+     */
+    private static boolean doc2XmlFile(Document document, String filename) {
+        boolean flag = true;
+        try {
+            /** 将document中的内容写入文件中 */
+            TransformerFactory tFactory = TransformerFactory.newInstance();
+            Transformer transformer = tFactory.newTransformer();
+            /** 编码 */
+            // transformer.setOutputProperty(OutputKeys.ENCODING, "GB2312");
+            DOMSource source = new DOMSource(document);
+            StreamResult result = new StreamResult(new File(filename));
+            transformer.transform(source, result);
+        } catch (Exception ex) {
+            flag = false;
+            ex.printStackTrace();
+        }
+        return flag;
+    }
 
 }
