@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.third.ytbus.MainActivity.USEING_PORT;
+
 /**
  * 作者：Sky on 2018/3/5.
  * 用途：//TODO
@@ -44,7 +46,7 @@ public class SerialService extends Service {
     public void onCreate() {
         super.onCreate();
         mSerialService = this;
-        changeActionReceiver(SerialInterface.getActions("/dev/ttyS3"));
+        changeActionReceiver(SerialInterface.getActions(USEING_PORT));
     }
 
     @Override

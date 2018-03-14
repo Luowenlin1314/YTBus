@@ -152,14 +152,15 @@ public class MainActivity extends BaseActivity {
         if (playDataBean != null) {
             playDefaultVideo(playDataBean.getDefaultPlayPath());
             calculateNextADPlayTime(playDataBean.getAdPlayStartTime());
+            if (!TextUtils.isEmpty(lastPlayPath)) {
+                if (lastPlayPath.contains(playDataBean.getDefaultPlayPath())) {
+                    ytVideoView.seekTo(lastPlayTime);
+                }
+            }
         } else {
             playDefaultVideo(YTBusConfigData.DEFAULT_PLAY_PATH);
         }
-        if (!TextUtils.isEmpty(lastPlayPath)) {
-            if (lastPlayPath.contains(playDataBean.getDefaultPlayPath())) {
-                ytVideoView.seekTo(lastPlayTime);
-            }
-        }
+
     }
 
     //播放广告时先保存电影的位置
@@ -303,9 +304,10 @@ public class MainActivity extends BaseActivity {
     /**
      * 打开串口,固件串口3，波特率115200
      */
+    public static String USEING_PORT = "/dev/ttyS3";
     private void openSerial(){
         try {
-            SerialInterface.openSerialPort("/dev/ttyS3",115200);
+            SerialInterface.openSerialPort(USEING_PORT,115200);
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this,"串口打开错误，请检查串口是否正常！",Toast.LENGTH_LONG).show();

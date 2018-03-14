@@ -50,7 +50,7 @@ public class SerialReadThread extends Thread {
 						}
 						sendBrocast(temp);
 					} else {
-//						manager.closeSerial();
+						manager.closeSerial();
 					}
 				}
 			} catch (IOException e) {
