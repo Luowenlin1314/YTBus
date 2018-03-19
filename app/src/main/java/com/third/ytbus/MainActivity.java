@@ -22,6 +22,7 @@ import android.widget.Toast;
 
 import com.third.ytbus.base.ActivityFragmentInject;
 import com.third.ytbus.base.BaseActivity;
+import com.third.ytbus.bean.ADPlayBean;
 import com.third.ytbus.bean.PlayDataBean;
 import com.third.ytbus.manager.SerialInterface;
 import com.third.ytbus.utils.Contans;
@@ -36,7 +37,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +70,8 @@ public class MainActivity extends BaseActivity {
     private YTVideoView ytVideoView;
     private TextView ytAdTextView;
     private PlayDataBean playDataBean;
+    private List<ADPlayBean> adPlayBeanList;
+    private ADPlayBean adPlayBean;
     private String ytFileRootPath;
 
     @Override
@@ -108,7 +110,7 @@ public class MainActivity extends BaseActivity {
         }
         playDataBean = parseConfigFile();
         registerYTProReceiver();
-        mHandler.sendEmptyMessageDelayed(WHAT_OPEN_SERIAL,2000);
+        mHandler.sendEmptyMessageDelayed(WHAT_OPEN_SERIAL,3000);
     }
 
     @Override
@@ -134,6 +136,7 @@ public class MainActivity extends BaseActivity {
         if (ytVideoView != null) {
             if (ytVideoView.isPlaying()) {
                 //保存当前播放的地址跟位置
+                mHandler.removeMessages(WHAT_PLAY_AD);
                 tempPlayPosition = ytVideoView.getCurrentPosition();
                 tempPlayPath = ytVideoView.getVideoPath();
                 if (!TextUtils.isEmpty(tempPlayPath)) {
@@ -151,7 +154,10 @@ public class MainActivity extends BaseActivity {
         int lastPlayTime = PreferenceUtils.getInt(SP_KEY_PLAY_TIME, 0);
         if (playDataBean != null) {
             playDefaultVideo(playDataBean.getDefaultPlayPath());
-            calculateNextADPlayTime(playDataBean.getAdPlayStartTime());
+            if(adPlayBeanList != null && adPlayBeanList.size() > 0){
+                adPlayBean = adPlayBeanList.get(0);
+                calculateNextADPlayTime(adPlayBean.getAdPlayStartTime());
+            }
             if (!TextUtils.isEmpty(lastPlayPath)) {
                 if (lastPlayPath.contains(playDataBean.getDefaultPlayPath())) {
                     ytVideoView.seekTo(lastPlayTime);
@@ -159,16 +165,18 @@ public class MainActivity extends BaseActivity {
             }
         } else {
             playDefaultVideo(YTBusConfigData.DEFAULT_PLAY_PATH);
+            Toast.makeText(this,"配置文件错误",Toast.LENGTH_LONG).show();
         }
 
     }
+
 
     //播放广告时先保存电影的位置
     private int tempPlayPosition = 0;
     private String tempPlayPath = "";
 
     private void handleChangePlay() {
-        String adPlayPath = playDataBean.getAdPlayPath();
+        String adPlayPath = adPlayBean.getAdPlayPath();
         if (playDataBean != null && !TextUtils.isEmpty(adPlayPath)) {
             File adFile = new File(ytFileRootPath, adPlayPath);
             if (adFile != null && adFile.exists()) {
@@ -179,7 +187,7 @@ public class MainActivity extends BaseActivity {
             }
         }
         //播放字幕
-        String adContent = playDataBean.getAdContent();
+        String adContent = adPlayBean.getAdContent();
         if (!TextUtils.isEmpty(adContent)) {
             ytAdTextView.setText(adContent);
             ytAdTextView.setVisibility(View.VISIBLE);
@@ -211,24 +219,27 @@ public class MainActivity extends BaseActivity {
     private PlayDataBean parseConfigFile() {
         try {
             File configFile = new File(ytFileRootPath, YTBusConfigData.YTBusConfigFilePath);
-            String root = "configRoot";
-            List<String> files = new ArrayList<>();
-            files.add("defaultPlayPath");
-            files.add("adPlayStartTime");
-            files.add("adPlayPath");
-            files.add("adContent");
-            List<String> elements = new ArrayList<>();
-            elements.add("DEFAULT_PLAY");
-            elements.add("AD_PLAY_TIME");
-            elements.add("AD_PLAY_PATH");
-            elements.add("AD_TEXT_CONTENT");
-            List<PlayDataBean> playDataBeanList = ParseFileUtil.parse(new FileInputStream(configFile),
-                    PlayDataBean.class, files, elements, root);
+//            String root = "configRoot";
+//            List<String> files = new ArrayList<>();
+//            files.add("defaultPlayPath");
+//            files.add("adPlayStartTime");
+//            files.add("adPlayPath");
+//            files.add("adContent");
+//            List<String> elements = new ArrayList<>();
+//            elements.add("DEFAULT_PLAY");
+//            elements.add("AD_PLAY_TIME");
+//            elements.add("AD_PLAY_PATH");
+//            elements.add("AD_TEXT_CONTENT");
+//            List<PlayDataBean> playDataBeanList = ParseFileUtil.parse(new FileInputStream(configFile),
+//                    PlayDataBean.class, files, elements, root);
+            List<PlayDataBean> playDataBeanList = ParseFileUtil.parsePlayData(new FileInputStream(configFile));
             if (playDataBeanList != null && playDataBeanList.size() > 0) {
+                adPlayBeanList = playDataBeanList.get(0).getAdPlayBeanList();
                 return playDataBeanList.get(0);
             }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
+            Toast.makeText(this,"配置文件有问题，请检查！",Toast.LENGTH_LONG).show();
         }
         return null;
     }
@@ -246,15 +257,15 @@ public class MainActivity extends BaseActivity {
 
     //3、计算下次广告播放的时间
     private SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
-
     private void calculateNextADPlayTime(String adPlayTime) {
         if (!TextUtils.isEmpty(adPlayTime)) {
             try {
                 long nextAdTime = sdf.parse(adPlayTime).getTime();
                 long currentTime = sdf.parse(sdf.format(new Date())).getTime();
                 if (nextAdTime >= currentTime) {
+                    mHandler.removeMessages(WHAT_PLAY_AD);
                     mHandler.sendEmptyMessageDelayed(WHAT_PLAY_AD, nextAdTime - currentTime);
-                    Log.e("ZM", "播放内容：" + playDataBean.getAdContent());
+                    Log.e("ZM", "播放内容：" + adPlayBean.getAdContent());
                 }
             } catch (Exception e) {
                 //不处理
@@ -304,10 +315,19 @@ public class MainActivity extends BaseActivity {
     /**
      * 打开串口,固件串口3，波特率115200
      */
-    public static String USEING_PORT = "/dev/ttyS3";
+    public static String USEING_PORT = "/dev/ttyS2";
+    public static int USEING_RATE = 115200;
     private void openSerial(){
         try {
-            SerialInterface.openSerialPort(USEING_PORT,115200);
+            if(playDataBean != null){
+                String serialPort = playDataBean.getDefaultSerialPort();
+                String serialRate = playDataBean.getDefaultSerialRate();
+                USEING_PORT = serialPort;
+                USEING_RATE = Integer.valueOf(serialRate);
+                SerialInterface.openSerialPort(USEING_PORT,USEING_RATE);
+            }else{
+                SerialInterface.openSerialPort(USEING_PORT,USEING_RATE);
+            }
         } catch (Exception e) {
             e.printStackTrace();
             Toast.makeText(this,"串口打开错误，请检查串口是否正常！",Toast.LENGTH_LONG).show();

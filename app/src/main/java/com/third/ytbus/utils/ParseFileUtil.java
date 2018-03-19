@@ -3,6 +3,9 @@ package com.third.ytbus.utils;
 import android.util.Log;
 import android.util.Xml;
 
+import com.third.ytbus.bean.ADPlayBean;
+import com.third.ytbus.bean.PlayDataBean;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,6 +33,72 @@ import javax.xml.transform.stream.StreamResult;
  */
 
 public class ParseFileUtil {
+
+    /**
+     * 直接解析
+     * @param is
+     * @return
+     */
+    public static  List<PlayDataBean> parsePlayData(InputStream is) {
+        Log.v("rss", "开始解析XML.");
+        List<PlayDataBean> list = new ArrayList<PlayDataBean>();
+        String itemElement = "configRoot";
+        String adElement = "PLAY_DATA";
+        try {
+            XmlPullParser xmlPullParser = Xml.newPullParser();
+            xmlPullParser.setInput(is, "UTF-8");
+            int event = xmlPullParser.getEventType();
+            PlayDataBean playDataBean = null;
+            ADPlayBean adPlayBean = null;
+            while (event != XmlPullParser.END_DOCUMENT) {
+                switch (event) {
+                    case XmlPullParser.START_TAG:
+                        if (itemElement.equals(xmlPullParser.getName())) {
+                            playDataBean = new PlayDataBean();
+                        }
+                        if (adElement.equals(xmlPullParser.getName())) {
+                            adPlayBean = new ADPlayBean();
+                        }
+                        if (playDataBean != null){
+                            if(xmlPullParser.getName().equals("DEFAULT_SERIAL_PORT")){
+                                playDataBean.setDefaultSerialPort(xmlPullParser.nextText());
+                            }else if(xmlPullParser.getName().equals("DEFAULT_SERIAL_RATE")){
+                                playDataBean.setDefaultSerialRate(xmlPullParser.nextText());
+                            }else if(xmlPullParser.getName().equals("DEFAULT_PLAY")){
+                                playDataBean.setDefaultPlayPath(xmlPullParser.nextText());
+                            }
+
+                            if(adPlayBean != null){
+                                if(xmlPullParser.getName().equals("AD_PLAY_TIME")){
+                                    adPlayBean.setAdPlayStartTime(xmlPullParser.nextText());
+                                }else if(xmlPullParser.getName().equals("AD_PLAY_PATH")){
+                                    adPlayBean.setAdPlayPath(xmlPullParser.nextText());
+                                }else if(xmlPullParser.getName().equals("AD_TEXT_CONTENT")){
+                                    adPlayBean.setAdContent(xmlPullParser.nextText());
+                                }
+                            }
+                        }
+                        break;
+                    case XmlPullParser.END_TAG:
+                        if (itemElement.equals(xmlPullParser.getName())) {
+                            list.add(playDataBean);
+                            playDataBean = null;
+                        }else if(adElement.equals(xmlPullParser.getName())){
+                            if(playDataBean != null){
+                                playDataBean.getAdPlayBeanList().add(adPlayBean);
+                                adPlayBean = null;
+                            }
+                        }
+                        break;
+                }
+                event = xmlPullParser.next();
+            }
+        } catch (Exception e) {
+            Log.e("rss", "解析XML异常：" + e.getMessage());
+            throw new RuntimeException("解析XML异常：" + e.getMessage());
+        }
+        return list;
+    }
 
     /**
      * 解析XML转换成对象
