@@ -30,9 +30,12 @@
         android:singleLine="true"
         android:text="" />
 
-
-    <!--<Button android:onClick="play" android:id="@+id/play" android:text="播放" android:layout_width="match_parent" android:layout_height="wrap_content"/>wrap_content-->
-    <!--<Button android:onClick="pause" android:id="@+id/pause" android:text="暂停" android:layout_width="match_parent" android:layout_height="wrap_content"/>-->
-    <!--<Button android:onClick="seekTo" android:id="@+id/seekTo" android:text="跳转" android:layout_width="match_parent" android:layout_height="wrap_content"/>-->
+    <ImageView
+        android:id="@+id/img_error"
+        android:src="@drawable/img_error"
+        android:scaleType="fitXY"
+        android:visibility="gone"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
 </RelativeLayout>

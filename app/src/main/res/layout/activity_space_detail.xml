@@ -4,6 +4,8 @@
     android:layout_height="match_parent">
 
     <RelativeLayout
+        android:focusable="false"
+        android:clickable="false"
         android:layout_width="match_parent"
         android:layout_height="@dimen/DIMEN_50dp">
 
@@ -21,6 +23,8 @@
 
 
         <TextView
+            android:focusable="false"
+            android:clickable="false"
             android:text="文件路径"
             android:layout_centerVertical="true"
             android:layout_marginLeft="@dimen/DIMEN_55dp"

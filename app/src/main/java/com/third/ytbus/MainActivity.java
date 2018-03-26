@@ -14,10 +14,11 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.third.ytbus.activity.SpaceDetailActivity;
+import com.third.ytbus.activity.SelectSpaceActivity;
 import com.third.ytbus.base.ActivityFragmentInject;
 import com.third.ytbus.base.BaseActivity;
 import com.third.ytbus.bean.ADPlayBean;
@@ -66,6 +67,8 @@ public class MainActivity extends BaseActivity {
     private static final String SP_KEY_PLAY_TIME = "playTime";
     private YTVideoView ytVideoView;
     private TextView ytAdTextView;
+    private ImageView imgError;
+
     private PlayDataBean playDataBean;
     private List<ADPlayBean> adPlayBeanList;
     private ADPlayBean adPlayBean;
@@ -93,6 +96,7 @@ public class MainActivity extends BaseActivity {
     protected void findViewAfterViewCreate() {
         ytVideoView = (YTVideoView) findViewById(R.id.ytVideoView);
         ytAdTextView = (TextView) findViewById(R.id.txt_ad_content);
+        imgError = (ImageView) findViewById(R.id.img_error);
     }
 
     @Override
@@ -161,12 +165,15 @@ public class MainActivity extends BaseActivity {
                 }
             }
         } else {
-            playDefaultVideo(YTBusConfigData.DEFAULT_PLAY_PATH);
+            someError();
             Toast.makeText(this,"配置文件错误",Toast.LENGTH_LONG).show();
         }
 
     }
 
+    private void someError(){
+        imgError.setVisibility(View.VISIBLE);
+    }
 
     //播放广告时先保存电影的位置
     private int tempPlayPosition = 0;
@@ -210,6 +217,8 @@ public class MainActivity extends BaseActivity {
                 ytAdTextView.setVisibility(View.INVISIBLE);
             }
         });
+
+
     }
 
     //1、解析配置文件,如果解析出错，直接播放默认文件，默认文件不存在，播放内置视频
@@ -235,6 +244,7 @@ public class MainActivity extends BaseActivity {
             ytVideoView.setVideoPath(ytFileRootPath + defaultPlayFilePath);
         } else {
 //            ytVideoView.setVideoPath(ytFileRootPath + YTBusConfigData.DEFAULT_PLAY_PATH);
+            someError();
             Toast.makeText(this,"找不到对应视频，请检查是否存在!",Toast.LENGTH_LONG).show();
         }
     }
@@ -262,8 +272,7 @@ public class MainActivity extends BaseActivity {
      * 调到文件系统
      */
     private void toFileSystem() {
-         //A20不行，改
-        Intent toDetail = new Intent(this,SpaceDetailActivity.class);
+        Intent toDetail = new Intent(this,SelectSpaceActivity.class);
         startActivityForResult(toDetail,1);
     }
 

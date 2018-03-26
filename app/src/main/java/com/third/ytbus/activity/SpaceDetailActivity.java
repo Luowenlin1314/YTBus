@@ -31,6 +31,7 @@ import java.util.List;
 public class SpaceDetailActivity extends BaseActivity {
 
     private RecyclerView recyclerView;
+    private LinearLayoutManager lm;
     private TextView txtTitle;
     private ImageView imgBack;
 
@@ -80,9 +81,10 @@ public class SpaceDetailActivity extends BaseActivity {
 
     private void initAdapter(){
         fileDetailAdapter = new FileDetailAdapter(this,R.layout.item_file,null);
-        LinearLayoutManager lm = new LinearLayoutManager(this, 1, false);
+        lm = new LinearLayoutManager(this, 1, false);
         recyclerView.setLayoutManager(lm);
         recyclerView.setAdapter(fileDetailAdapter);
+        recyclerView.setFocusable(false);
         fileDetailAdapter.setItemClickListener(new FileDetailAdapter.ItemClickListener() {
             @Override
             public void onClick(String path) {
@@ -111,6 +113,7 @@ public class SpaceDetailActivity extends BaseActivity {
         currentPath = path;
         List<String> files = SpaceFileUtil.getFileByPath(path);
         fileDetailAdapter.updateDatas(files);
+        recyclerView.scrollToPosition(0);
     }
 
     @Override
