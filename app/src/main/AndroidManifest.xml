@@ -24,6 +24,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".activity.SelectSpaceActivity"></activity>
+
+        <activity android:name=".activity.SpaceDetailActivity"></activity>
+
         <service android:name=".service.SerialService"></service>
     </application>
 

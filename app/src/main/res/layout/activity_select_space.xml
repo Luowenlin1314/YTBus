@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <RelativeLayout
+        android:focusable="false"
+        android:clickable="false"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_50dp">
+
+        <ImageView
+            android:background="@drawable/selecter_back"
+            android:clickable="true"
+            android:focusable="true"
+            android:id="@+id/img_back"
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:src="@mipmap/icon_back"
+            android:layout_centerVertical="true"
+            android:layout_alignParentLeft="true"
+            android:layout_width="@dimen/DIMEN_35dp"
+            android:layout_height="@dimen/DIMEN_35dp"/>
+
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_55dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:text="文件管理"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#000000"
+            android:layout_centerVertical="true"
+            android:id="@+id/txt_path_name"
+            android:ellipsize="middle"
+            android:singleLine="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <View
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space0"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="/mnt/stat"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space1"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:id="@+id/txt_sd"
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="SD卡"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space2"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="/mnt/usbhost0"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space3"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="/mnt/usbhost1"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space4"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="/mnt/usbhost2"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@drawable/selecter_back"
+        android:id="@+id/rl_space5"
+        android:clickable="true"
+        android:focusable="true"
+        android:layout_marginTop="@dimen/DIMEN_5dp"
+        android:layout_marginBottom="@dimen/DIMEN_5dp"
+        android:layout_marginLeft="@dimen/DIMEN_20dp"
+        android:layout_marginRight="@dimen/DIMEN_20dp"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/DIMEN_60dp">
+
+        <ImageView
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_alignParentLeft="true"
+            android:src="@drawable/dir"
+            android:layout_centerVertical="true"
+            android:layout_width="@dimen/DIMEN_30dp"
+            android:layout_height="@dimen/DIMEN_30dp" />
+
+        <TextView
+            android:layout_marginLeft="@dimen/DIMEN_50dp"
+            android:text="/mnt/usbhost3"
+            android:textSize="@dimen/DIMEN_15sp"
+            android:textColor="#aa000000"
+            android:gravity="center_vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <ImageView
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_centerVertical="true"
+            android:layout_alignParentRight="true"
+            android:src="@mipmap/icon_next"
+            android:layout_width="@dimen/DIMEN_20dp"
+            android:layout_height="@dimen/DIMEN_20dp" />
+
+        <View
+            android:layout_marginLeft="@dimen/DIMEN_10dp"
+            android:layout_marginRight="@dimen/DIMEN_10dp"
+            android:layout_alignParentBottom="true"
+            android:background="#cccccc"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/DIMEN_1dp"></View>
+
+    </RelativeLayout>
+
+
+
+</LinearLayout>

@@ -1,13 +1,10 @@
 package com.third.ytbus;
 
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
@@ -20,13 +17,13 @@ import android.view.Window;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.third.ytbus.activity.SpaceDetailActivity;
 import com.third.ytbus.base.ActivityFragmentInject;
 import com.third.ytbus.base.BaseActivity;
 import com.third.ytbus.bean.ADPlayBean;
 import com.third.ytbus.bean.PlayDataBean;
 import com.third.ytbus.manager.SerialInterface;
 import com.third.ytbus.utils.Contans;
-import com.third.ytbus.utils.IntentUtils;
 import com.third.ytbus.utils.KeyEventUtils;
 import com.third.ytbus.utils.ParseFileUtil;
 import com.third.ytbus.utils.PreferenceUtils;
@@ -219,19 +216,6 @@ public class MainActivity extends BaseActivity {
     private PlayDataBean parseConfigFile() {
         try {
             File configFile = new File(ytFileRootPath, YTBusConfigData.YTBusConfigFilePath);
-//            String root = "configRoot";
-//            List<String> files = new ArrayList<>();
-//            files.add("defaultPlayPath");
-//            files.add("adPlayStartTime");
-//            files.add("adPlayPath");
-//            files.add("adContent");
-//            List<String> elements = new ArrayList<>();
-//            elements.add("DEFAULT_PLAY");
-//            elements.add("AD_PLAY_TIME");
-//            elements.add("AD_PLAY_PATH");
-//            elements.add("AD_TEXT_CONTENT");
-//            List<PlayDataBean> playDataBeanList = ParseFileUtil.parse(new FileInputStream(configFile),
-//                    PlayDataBean.class, files, elements, root);
             List<PlayDataBean> playDataBeanList = ParseFileUtil.parsePlayData(new FileInputStream(configFile));
             if (playDataBeanList != null && playDataBeanList.size() > 0) {
                 adPlayBeanList = playDataBeanList.get(0).getAdPlayBeanList();
@@ -278,36 +262,21 @@ public class MainActivity extends BaseActivity {
      * 调到文件系统
      */
     private void toFileSystem() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        //intent.setType(“image/*”);//选择图片
-        //intent.setType(“audio/*”); //选择音频
-//        intent.setType("video/*"); //选择视频 （mp4 3gp 是android支持的视频格式）
-        //intent.setType(“video/*;image/*”);//同时选择视频和图片
-        intent.setType("*/*");//无类型限制
-        intent.addCategory(Intent.CATEGORY_OPENABLE);
-        startActivityForResult(intent, 1);
+         //A20不行，改
+        Intent toDetail = new Intent(this,SpaceDetailActivity.class);
+        startActivityForResult(toDetail,1);
     }
 
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
-            Uri uri = data.getData();
-            String fromPath = "";
-            if ("file".equalsIgnoreCase(uri.getScheme())) {//使用第三方应用打开
-                fromPath = uri.getPath();
-            } else if (Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT) {//4.4以后
-                fromPath = IntentUtils.getPathFrom4(this, uri);
-            } else {//4.4以下下系统调用方法
-                fromPath = IntentUtils.getRealPathFromURI(this,uri);
-            }
-            if(!TextUtils.isEmpty(fromPath) && IntentUtils.isVideo(fromPath)){
-                if(fromPath.contains(ytFileRootPath)){
-                    fromPath = fromPath.replace(ytFileRootPath,"");
-                }
-                updatePlayConfig(fromPath);
-            }else{
-                Toast.makeText(this,"请选择视频文件！",Toast.LENGTH_LONG).show();
+        if(data == null){
+            return;
+        }
+        String urlPath = data.getStringExtra("selectPath");
+        if(requestCode == 1){
+            if(!TextUtils.isEmpty(urlPath)){
+                updatePlayConfig(urlPath);
             }
         }
     }
