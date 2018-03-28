@@ -9,7 +9,7 @@ public class Global {
 			// File Audio
 			{ ".mp3", ".wav", ".ogg", "midi" },
 			// File Video
-			{ ".mp4", ".rmvb", ".avi", ".flv" },
+			{ ".mp4", ".rmvb", ".avi", ".flv", ".mkv" },
 			// File Web Text
 			{ ".jsp", ".html", ".htm", ".js", ".php" },
 			// File Text
@@ -66,6 +66,7 @@ public class Global {
 	public static final int FileType_rmvb = 301;
 	public static final int FileType_avi = 302;
 	public static final int FileType_flv = 303;
+	public static final int FileType_mkv = 304;
 
 	/**
 	 * 4.File Type: Web Text

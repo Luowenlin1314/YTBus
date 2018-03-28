@@ -1,5 +1,6 @@
 package com.third.ytbus;
 
+import android.app.ActivityManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -272,6 +273,11 @@ public class MainActivity extends BaseActivity {
      * 调到文件系统
      */
     private void toFileSystem() {
+        String topName = getRunningActivityName();
+        if(topName.contains("SelectSpaceActivity")
+                || topName.contains("SelectSpaceActivity")){
+            return;
+        }
         Intent toDetail = new Intent(this,SelectSpaceActivity.class);
         startActivityForResult(toDetail,1);
     }
@@ -303,6 +309,7 @@ public class MainActivity extends BaseActivity {
                 USEING_PORT = serialPort;
                 USEING_RATE = Integer.valueOf(serialRate);
                 SerialInterface.openSerialPort(USEING_PORT,USEING_RATE);
+                SerialInterface.changeActionReceiver(SerialInterface.getActions(USEING_PORT));
             }else{
                 SerialInterface.openSerialPort(USEING_PORT,USEING_RATE);
             }
@@ -417,5 +424,13 @@ public class MainActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-
+    /**
+     * 获取顶部activity
+     * @return
+     */
+    private String getRunningActivityName(){
+        ActivityManager activityManager=(ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        String runningActivity=activityManager.getRunningTasks(1).get(0).topActivity.getClassName();
+        return runningActivity;
+    }
 }

@@ -9,6 +9,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.INJECT_EVENTS" />
+    <uses-permission android:name = "android.permission.GET_TASKS"/>
 
     <application
         android:allowBackup="true"
@@ -24,9 +25,17 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".activity.SelectSpaceActivity"></activity>
+        <activity android:name=".activity.SelectSpaceActivity"
+        android:launchMode="singleTop"></activity>
 
-        <activity android:name=".activity.SpaceDetailActivity"></activity>
+        <activity android:name=".activity.SpaceDetailActivity"
+        android:launchMode="singleTop"></activity>
+        
+        <receiver android:name=".receiver.BootReceiver" >
+            <intent-filter android:priority="1000" >
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <service android:name=".service.SerialService"></service>
     </application>
